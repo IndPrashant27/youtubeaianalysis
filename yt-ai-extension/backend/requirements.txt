@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+langchain
+langchain-openai
+langchain-community
+langchain-google-genai
+faiss-cpu
+youtube-transcript-api
+yt-dlp
+tiktoken
+sentence-transformers
+python-dotenv

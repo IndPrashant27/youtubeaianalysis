@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>YouTube AI Assistant</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      width: 350px;
+      height: 500px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #333;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .container {
+      padding: 20px;
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .background-animation {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+      background-size: 300% 300%;
+      animation: gradientShift 8s ease infinite;
+      opacity: 0.1;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 25px;
+      position: relative;
+    }
+
+    .header h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: white;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      margin-bottom: 5px;
+      animation: fadeInDown 0.8s ease-out;
+    }
+
+    .header .subtitle {
+      color: rgba(255,255,255,0.9);
+      font-size: 12px;
+      animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+
+    .youtube-icon {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      background: #ff0000;
+      border-radius: 6px;
+      position: relative;
+      margin-right: 8px;
+      vertical-align: middle;
+      animation: pulse 2s infinite;
+    }
+
+    .youtube-icon::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-40%, -50%);
+      width: 0;
+      height: 0;
+      border-left: 6px solid white;
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+      position: relative;
+      animation: slideInLeft 0.6s ease-out 0.4s both;
+    }
+
+    .input-wrapper {
+      position: relative;
+      background: rgba(255,255,255,0.95);
+      border-radius: 12px;
+      padding: 3px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 6px 25px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+
+    .input-wrapper:focus-within {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+
+    #question {
+      width: 100%;
+      padding: 14px 16px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      background: transparent;
+      outline: none;
+      color: #333;
+      font-family: inherit;
+      resize: none;
+    }
+
+    #question::placeholder {
+      color: #888;
+      transition: all 0.3s ease;
+    }
+
+    #question:focus::placeholder {
+      opacity: 0.5;
+    }
+
+    .ask-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+      position: relative;
+      overflow: hidden;
+      animation: slideInRight 0.6s ease-out 0.6s both;
+      margin-bottom: 15px;
+    }
+
+    .ask-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255,107,107,0.4);
+    }
+
+    .ask-btn:active {
+      transform: translateY(0);
+    }
+
+    .ask-btn.loading {
+      background: linear-gradient(135deg, #ccc, #999);
+      cursor: not-allowed;
+    }
+
+    .ask-btn.loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 16px;
+      height: 16px;
+      border: 2px solid transparent;
+      border-top: 2px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      transform: translate(-50%, -50%);
+    }
+
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .answer-container {
+      flex: 1;
+      animation: fadeIn 0.6s ease-out 0.8s both;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .answer-label {
+      color: white;
+      font-weight: 600;
+      margin-bottom: 10px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    #answer {
+      background: rgba(255,255,255,0.95);
+      border-radius: 12px;
+      padding: 16px;
+      flex: 1;
+      font-size: 13px;
+      line-height: 1.5;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 6px 25px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #333;
+      transition: all 0.3s ease;
+      overflow-y: auto;
+      max-height: 200px;
+    }
+
+    #answer:empty::before {
+      content: 'Your answer will appear here...';
+      color: #888;
+      font-style: italic;
+    }
+
+    .answer-typing {
+      position: relative;
+    }
+
+    .answer-typing::after {
+      content: '';
+      display: inline-block;
+      width: 2px;
+      height: 14px;
+      background: #ff6b6b;
+      margin-left: 2px;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    .floating-particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background: rgba(255,255,255,0.4);
+      border-radius: 50%;
+      animation: float 8s infinite linear;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-10px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-3px); }
+      75% { transform: translateX(3px); }
+    }
+
+    /* Custom scrollbar */
+    #answer::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #answer::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.1);
+      border-radius: 3px;
+    }
+
+    #answer::-webkit-scrollbar-thumb {
+      background: rgba(255,107,107,0.6);
+      border-radius: 3px;
+    }
+
+    #answer::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,107,107,0.8);
+    }
+  </style>
+</head>
+<body>
+  <div class="background-animation"></div>
+  
+  <div class="floating-particles">
+    <div class="particle" style="left: 15%; animation-delay: 0s;"></div>
+    <div class="particle" style="left: 35%; animation-delay: 2s;"></div>
+    <div class="particle" style="left: 55%; animation-delay: 4s;"></div>
+    <div class="particle" style="left: 75%; animation-delay: 1s;"></div>
+    <div class="particle" style="left: 85%; animation-delay: 3s;"></div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <h2>
+        <span class="youtube-icon"></span>
+        YouTube AI Assistant
+      </h2>
+      <div class="subtitle">Ask questions about this video</div>
+    </div>
+
+    <div class="input-group">
+      <div class="input-wrapper">
+        <input type="text" id="question" placeholder="What would you like to know?" />
+      </div>
+    </div>
+
+    <button class="ask-btn" id="askBtn">
+      <span class="btn-text">Ask Question</span>
+    </button>
+
+    <div class="answer-container">
+      <div class="answer-label">Answer</div>
+      <div id="answer"></div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

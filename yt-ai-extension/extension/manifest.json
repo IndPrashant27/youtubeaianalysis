@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube AI Transcript Assistant",
+  "version": "1.0",
+  "description": "Ask questions about any YouTube video using AI",
+  "permissions": ["activeTab", "scripting"],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
